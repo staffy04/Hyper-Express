@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && (
+        // Only allow non-admins to update name, phone, profilePhoto
+        !request.resource.data.keys().hasAny(['role']) || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Customers Collection
+    match /customers/{customerId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (isOwner(customerId) || isAdmin());
+    }
+
+    // Riders Collection
+    match /riders/{riderId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (isOwner(riderId) || isAdmin());
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (
+        resource.data.customerId == request.auth.uid || 
+        resource.data.riderId == request.auth.uid || 
+        isAdmin()
+      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (
+        resource.data.customerId == request.auth.uid || 
+        resource.data.riderId == request.auth.uid || 
+        request.resource.data.riderId == request.auth.uid || // for accepting order
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Tracking Collection
+    match /tracking/{orderId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // Payments Collection
+    match /payments/{paymentId} {
+      allow read: if isSignedIn() && (resource.data.customerId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn();
+    }
+
+    // Wallet Transactions
+    match /walletTransactions/{transactionId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn();
+    }
+
+    // Notifications Collection
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn();
+    }
+  }
+}

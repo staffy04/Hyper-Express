@@ -1,0 +1,6 @@
+{
+  "name": "Hyper Express",
+  "description": "A comprehensive logistics and delivery platform featuring a Customer Mobile App, Rider Mobile App, Admin Dashboard, and Real-Time Tracking.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

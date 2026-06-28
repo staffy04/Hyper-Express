@@ -1,0 +1,168 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account information shared across customers, riders, and admins.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "rider", "admin"] },
+        "profilePhoto": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "suspended"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "fullName", "email", "role", "status", "createdAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer specific details including wallet balance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "walletBalance": { "type": "number" }
+      },
+      "required": ["id", "userId", "walletBalance"]
+    },
+    "Rider": {
+      "title": "Rider",
+      "description": "Rider specific details, vehicle information, and delivery status.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "vehicleType": { "type": "string" },
+        "vehicleNumber": { "type": "string" },
+        "licenseNumber": { "type": "string" },
+        "rating": { "type": "number" },
+        "earningsBalance": { "type": "number" },
+        "onlineStatus": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "vehicleType", "vehicleNumber", "licenseNumber", "rating", "earningsBalance", "onlineStatus"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Logistics delivery order details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "riderId": { "type": "string" },
+        "pickupLocation": {
+          "type": "object",
+          "properties": {
+            "address": { "type": "string" },
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "dropoffLocation": {
+          "type": "object",
+          "properties": {
+            "address": { "type": "string" },
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "packageType": { "type": "string" },
+        "packageWeight": { "type": "number" },
+        "packageDescription": { "type": "string" },
+        "fee": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "picked_up", "delivered", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "customerId", "pickupLocation", "dropoffLocation", "packageType", "packageWeight", "fee", "status", "createdAt"]
+    },
+    "Tracking": {
+      "title": "Tracking",
+      "description": "Real-time location coordinate updates for active orders.",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderId", "latitude", "longitude", "timestamp"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Payment records for orders.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orderId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "amount": { "type": "number" },
+        "method": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] }
+      },
+      "required": ["id", "orderId", "customerId", "amount", "method", "status"]
+    },
+    "WalletTransaction": {
+      "title": "WalletTransaction",
+      "description": "Ledger entries for customer and rider wallets.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["deposit", "withdrawal", "payment", "earnings"] },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "amount", "type", "description", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "In-app system notifications.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "title", "message", "createdAt", "read"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Users profile collection."
+    },
+    "customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer metadata including wallet balances."
+    },
+    "riders/{riderId}": {
+      "schema": "Rider",
+      "description": "Riders profile, vehicle data, rating, status."
+    },
+    "orders/{orderId}": {
+      "schema": "Order",
+      "description": "Shipment orders list."
+    },
+    "tracking/{orderId}": {
+      "schema": "Tracking",
+      "description": "GPS coordinates history / current status of delivery."
+    },
+    "payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Payments records list."
+    },
+    "walletTransactions/{transactionId}": {
+      "schema": "WalletTransaction",
+      "description": "Wallet ledger events list."
+    },
+    "notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "System alerts and notifications."
+    }
+  }
+}
